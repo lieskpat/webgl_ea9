@@ -75,11 +75,11 @@ export default `
         vec3 tNormal = normalize(uNMatrix * aNormal);
                 
         // Calculate view vector.
-        vec3 v = normalize(-tPosition.xyz);    
+        // vec3 v = normalize(-tPosition.xyz);    
                                 
-    vColor = vec4( phong(tPosition.xyz, tNormal, v), 1.0);
+        // vColor = vec4( phong(tPosition.xyz, tNormal, v), 1.0);
 
-    vTextureCoord = aTextureCoord;
+        vTextureCoord = aTextureCoord;
 
     }
 

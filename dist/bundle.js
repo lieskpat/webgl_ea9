@@ -1,10 +1,13 @@
 var vertexGlsl = `
     attribute vec3 aPosition;
     attribute vec3 aNormal;
+    attribute vec2 aTextureCoord;
 
     uniform mat4 uPMatrix;
     uniform mat4 uMVMatrix;
     uniform mat3 uNMatrix;
+
+    varying vec2 vTextureCoord;
             
     //uniform vec4 uColor;
     varying vec4 vColor;
@@ -72,9 +75,12 @@ var vertexGlsl = `
         vec3 tNormal = normalize(uNMatrix * aNormal);
                 
         // Calculate view vector.
-        vec3 v = normalize(-tPosition.xyz);    
+        // vec3 v = normalize(-tPosition.xyz);    
                                 
-        vColor = vec4( phong(tPosition.xyz, tNormal, v), 1.0);
+        // vColor = vec4( phong(tPosition.xyz, tNormal, v), 1.0);
+
+        vTextureCoord = aTextureCoord;
+
     }
 
 `;
@@ -83,11 +89,17 @@ var vertexGlsl = `
 var fragmentGlsl = `
 
     precision mediump float;
+
+    uniform sampler2D uTexture;
             
     varying vec4 vColor;
+
+    varying vec2 vTextureCoord;
             
     void main() {
-        gl_FragColor = vColor;
+        // gl_FragColor = vColor;
+
+        gl_FragColor = texture2D(uTexture, vTextureCoord);
     }
 
 `;
@@ -1047,10 +1059,6 @@ function createVertexDataPlane() {
             vertices[iVertex * 3 + 1] = y;
             vertices[iVertex * 3 + 2] = z;
 
-            // Set texture coordinate.
-            textureCoord[iVertex * 2] = (u + 10) / 20;
-            textureCoord[iVertex * 2 + 1] = (v + 10) / 20;
-
             // Calc and set normals.
             //var nx = Math.cos(u) * Math.cos(v);
             //var ny = Math.cos(u) * Math.sin(v);
@@ -1058,6 +1066,10 @@ function createVertexDataPlane() {
             normals[iVertex * 3] = 0;
             normals[iVertex * 3 + 1] = 1;
             normals[iVertex * 3 + 2] = 0;
+
+            // Set texture coordinate.
+            textureCoord[iVertex * 2] = (u + 10) / 20;
+            textureCoord[iVertex * 2 + 1] = (v + 10) / 20;
 
             // Set index.
             // Line on beam.
