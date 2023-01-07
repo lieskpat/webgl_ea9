@@ -1509,51 +1509,51 @@ function initModels() {
 
     // Create some default material.
     createPhongMaterial();
-    var mRed = createPhongMaterial({ kd: [1, 0, 0] });
-    var mGreen = createPhongMaterial({ kd: [0, 1, 0] });
+    createPhongMaterial({ kd: [1, 0, 0] });
+    createPhongMaterial({ kd: [0, 1, 0] });
     var mBlue = createPhongMaterial({ kd: [0, 0, 1] });
-    var mWhite = createPhongMaterial({
+    createPhongMaterial({
         ka: [1, 1, 1],
         kd: [0.5, 0.5, 0.5],
         ks: [0, 0, 0],
     });
 
-    createModel(
-        "torus",
-        fs,
-        [1, 1, 1, 1],
-        [0, 0.75, 0],
-        [0, 0, 0, 0],
-        [1, 1, 1, 1],
-        mRed
-    );
-    createModel(
-        "sphere",
-        fs,
-        [1, 1, 1, 1],
-        [-1.25, 0.5, 0],
-        [0, 0, 0, 0],
-        [0.5, 0.5, 0.5],
-        mGreen
-    );
-    createModel(
-        "sphere",
-        fs,
-        [1, 1, 1, 1],
-        [1.25, 0.5, 0],
-        [0, 0, 0, 0],
-        [0.5, 0.5, 0.5],
-        mBlue
-    );
-    createModel(
-        "plane",
-        fs,
-        [1, 1, 1, 1],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [1, 1, 1, 1],
-        mWhite
-    );
+//    createModel(
+//        "torus",
+//        fs,
+//        [1, 1, 1, 1],
+//        [0, 0.75, 0],
+//        [0, 0, 0, 0],
+//        [1, 1, 1, 1],
+//        mRed
+//    );
+//    createModel(
+//        "sphere",
+//        fs,
+//        [1, 1, 1, 1],
+//        [-1.25, 0.5, 0],
+//        [0, 0, 0, 0],
+//        [0.5, 0.5, 0.5],
+//        mGreen
+//    );
+//    createModel(
+//        "sphere",
+//        fs,
+//        [1, 1, 1, 1],
+//        [1.25, 0.5, 0],
+//        [0, 0, 0, 0],
+//        [0.5, 0.5, 0.5],
+//        mBlue
+//    );
+//    createModel(
+//        "plane",
+//        fs,
+//        [1, 1, 1, 1],
+//        [0, 0, 0, 0],
+//        [0, 0, 0, 0],
+//        [1, 1, 1, 1],
+//        mWhite
+//    );
     createModel(
         "plane",
         fs,
