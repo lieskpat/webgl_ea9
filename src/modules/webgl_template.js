@@ -226,52 +226,63 @@ function initModels() {
         ks: [0, 0, 0],
     });
 
-//    createModel(
-//        "torus",
-//        fs,
-//        [1, 1, 1, 1],
-//        [0, 0.75, 0],
-//        [0, 0, 0, 0],
-//        [1, 1, 1, 1],
-//        mRed
-//    );
-//    createModel(
-//        "sphere",
-//        fs,
-//        [1, 1, 1, 1],
-//        [-1.25, 0.5, 0],
-//        [0, 0, 0, 0],
-//        [0.5, 0.5, 0.5],
-//        mGreen
-//    );
-//    createModel(
-//        "sphere",
-//        fs,
-//        [1, 1, 1, 1],
-//        [1.25, 0.5, 0],
-//        [0, 0, 0, 0],
-//        [0.5, 0.5, 0.5],
-//        mBlue
-//    );
-//    createModel(
-//        "plane",
-//        fs,
-//        [1, 1, 1, 1],
-//        [0, 0, 0, 0],
-//        [0, 0, 0, 0],
-//        [1, 1, 1, 1],
-//        mWhite
-//    );
     createModel(
-        "plane",
+        "torus",
         fs,
         [1, 1, 1, 1],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [1, 1, 1, 1],
-        mBlue,
+        [0, 0, 0],
+        [0, 0, 0],
+        [2, 2, 2],
+        mRed,
         "textures/x.png"
     );
+    //    createModel(
+    //        "sphere",
+    //        fs,
+    //        [1, 1, 1, 1],
+    //        [-1.25, 0.5, 0],
+    //        [0, 0, 0, 0],
+    //        [0.5, 0.5, 0.5],
+    //        mGreen
+    //    );
+    //    createModel(
+    //        "sphere",
+    //        fs,
+    //        [1, 1, 1, 1],
+    //        [1.25, 0.5, 0],
+    //        [0, 0, 0, 0],
+    //        [0.5, 0.5, 0.5],
+    //        mBlue
+    //    );
+    //    createModel(
+    //        "plane",
+    //        fs,
+    //        [1, 1, 1, 1],
+    //        [0, 0, 0, 0],
+    //        [0, 0, 0, 0],
+    //        [1, 1, 1, 1],
+    //        mWhite
+    //    );
+    //    createModel(
+    //        "plane",
+    //        fs,
+    //        [1, 1, 1, 1],
+    //        [0, 0, 0, 0],
+    //        [0, 0, 0, 0],
+    //        [1, 1, 1, 1],
+    //        mBlue,
+    //        "textures/x.png"
+    //    );
+    //    createModel(
+    //        "sphere",
+    //        fs,
+    //        [1, 1, 1, 1],
+    //        [0, 0, 0],
+    //        [0, 0, 0],
+    //        [2, 2, 2],
+    //        mWhite,
+    //        "textures/x.png"
+    //    );
 
     interactiveModel = models[0];
 }
@@ -333,9 +344,13 @@ function onloadTextureImage(texture) {
 
     // Set texture parameter.
     // Min Filter: NEAREST,LINEAR, .. , LINEAR_MIPMAP_LINEAR,
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(
+        gl.TEXTURE_2D,
+        gl.TEXTURE_MIN_FILTER,
+        gl.LINEAR_MIPMAP_LINEAR
+    );
     // Mag Filter: NEAREST,LINEAR
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     // Use mip-Mapping.
     gl.generateMipmap(gl.TEXTURE_2D);
 
@@ -426,6 +441,14 @@ function initDataAndBuffers(model, geometryname) {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, model.indicesTris, gl.STATIC_DRAW);
     model.iboTris.numberOfElements = model.indicesTris.length;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+    // Setup texture coordinate vertex buffer object.
+    model.vboTextureCoord = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, model.vboTextureCoord);
+    gl.bufferData(gl.ARRAY_BUFFER, model.textureCoord, gl.STATIC_DRAW);
+    // Bind buffer to attribute variable.
+    prog.textureCoordAttrib = gl.getAttribLocation(prog, "aTextureCoord");
+    gl.enableVertexAttribArray(prog.textureCoordAttrib);
 }
 
 //animate spotlights around a circle
@@ -560,7 +583,10 @@ function render() {
         gl.uniform3fv(prog.materialKdUniform, models[i].material.kd);
         gl.uniform3fv(prog.materialKsUniform, models[i].material.ks);
         gl.uniform1f(prog.materialKeUniform, models[i].material.ke);
-
+        // Texture.
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, models[i].texture);
+        gl.uniform1i(prog.textureUniform, 0);
         draw(models[i]);
     }
 }
@@ -607,10 +633,15 @@ function draw(model) {
     gl.bindBuffer(gl.ARRAY_BUFFER, model.vboNormal);
     gl.vertexAttribPointer(prog.normalAttrib, 3, gl.FLOAT, false, 0, 0);
 
+    // Setup texture VBO.
+    gl.bindBuffer(gl.ARRAY_BUFFER, model.vboTextureCoord);
+    gl.vertexAttribPointer(prog.textureCoordAttrib, 2, gl.FLOAT, false, 0, 0);
+
     // Setup rendering tris.
     const fill = model.fillstyle.search(/fill/) != -1;
     if (fill) {
         gl.enableVertexAttribArray(prog.normalAttrib);
+        gl.enableVertexAttribArray(prog.textureCoordAttrib);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.iboTris);
         gl.drawElements(
             gl.TRIANGLES,
@@ -624,6 +655,7 @@ function draw(model) {
     const wireframe = model.fillstyle.search(/wireframe/) != -1;
     if (wireframe) {
         gl.disableVertexAttribArray(prog.normalAttrib);
+        gl.disableVertexAttribArray(prog.textureCoordAttrib);
         gl.vertexAttrib3f(prog.normalAttrib, 0, 0, 0);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.iboLines);
         gl.drawElements(

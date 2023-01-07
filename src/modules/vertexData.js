@@ -12,6 +12,9 @@ function createVertexDataTorus() {
     // Normals.
     this.normals = new Float32Array(3 * (n + 1) * (m + 1));
     var normals = this.normals;
+    //Texture
+    this.textureCoord = new Float32Array(2 * (n + 1) * (m + 1));
+    var textureCoord = this.textureCoord;
     // Index data.
     this.indicesLines = new Uint16Array(2 * 2 * n * m);
     var indicesLines = this.indicesLines;
@@ -48,6 +51,9 @@ function createVertexDataTorus() {
             normals[iVertex * 3] = nx;
             normals[iVertex * 3 + 1] = ny;
             normals[iVertex * 3 + 2] = nz;
+
+            textureCoord[iVertex * 2] = u / (2 * Math.PI); // s
+            textureCoord[iVertex * 2 + 1] = v / Math.PI; // t
 
             // Set index.
             // Line on beam.
@@ -127,8 +133,12 @@ function createVertexDataPlane() {
             normals[iVertex * 3 + 2] = 0;
 
             // Set texture coordinate.
-            textureCoord[iVertex * 2] = (u + 10) / 20;
-            textureCoord[iVertex * 2 + 1] = (v + 10) / 20;
+            //            textureCoord[iVertex * 2] = (u + 10) / 20;
+            //            textureCoord[iVertex * 2 + 1] = (v + 10) / 20;
+            //
+            // Set texture coordinate.
+            textureCoord[iVertex * 2] = u;
+            textureCoord[iVertex * 2 + 1] = v;
 
             // Set index.
             // Line on beam.
@@ -353,6 +363,9 @@ function createVertexDataSphere() {
     // Normals.
     this.normals = new Float32Array(3 * (n + 1) * (m + 1));
     var normals = this.normals;
+    // Textures
+    this.textureCoord = new Float32Array(2 * (n + 1) * (m + 1));
+    var textureCoord = this.textureCoord;
     // Index data.
     this.indicesLines = new Uint16Array(2 * 2 * n * m);
     var indicesLines = this.indicesLines;
@@ -386,6 +399,9 @@ function createVertexDataSphere() {
             normals[iVertex * 3] = x / vertexLength;
             normals[iVertex * 3 + 1] = y / vertexLength;
             normals[iVertex * 3 + 2] = z / vertexLength;
+
+            textureCoord[iVertex * 2] = u / (2 * Math.PI); // s
+            textureCoord[iVertex * 2 + 1] = v / Math.PI; // t
 
             // Set index.
             // Line on beam.
@@ -424,14 +440,14 @@ geometryModelDatas.push({
     description: "plane",
     function: createVertexDataPlane,
 });
-geometryModelDatas.push({
-    description: "pillow",
-    function: createVertexDataPillow,
-});
-geometryModelDatas.push({
-    description: "sphere-rekursiv",
-    function: createVertexDataRecSphere,
-});
+//geometryModelDatas.push({
+//    description: "pillow",
+//    function: createVertexDataPillow,
+//});
+//geometryModelDatas.push({
+//    description: "sphere-rekursiv",
+//    function: createVertexDataRecSphere,
+//});
 geometryModelDatas.push({
     description: "sphere",
     function: createVertexDataSphere,
