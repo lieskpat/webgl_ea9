@@ -1017,6 +1017,9 @@ function createVertexDataPlane() {
     // Normals.
     this.normals = new Float32Array(3 * (n + 1) * (m + 1));
     var normals = this.normals;
+    //Textures
+    this.textureCoord = new Float32Array(2 * (n + 1) * (m + 1));
+    var textureCoord = this.textureCoord;
     // Index data.
     this.indicesLines = new Uint16Array(2 * 2 * n * m);
     var indicesLines = this.indicesLines;
@@ -1043,6 +1046,10 @@ function createVertexDataPlane() {
             vertices[iVertex * 3] = x;
             vertices[iVertex * 3 + 1] = y;
             vertices[iVertex * 3 + 2] = z;
+
+            // Set texture coordinate.
+            textureCoord[iVertex * 2] = (u + 10) / 20;
+            textureCoord[iVertex * 2 + 1] = (v + 10) / 20;
 
             // Calc and set normals.
             //var nx = Math.cos(u) * Math.cos(v);
@@ -1509,51 +1516,51 @@ function initModels() {
 
     // Create some default material.
     createPhongMaterial();
-    var mRed = createPhongMaterial({ kd: [1, 0, 0] });
-    var mGreen = createPhongMaterial({ kd: [0, 1, 0] });
+    createPhongMaterial({ kd: [1, 0, 0] });
+    createPhongMaterial({ kd: [0, 1, 0] });
     var mBlue = createPhongMaterial({ kd: [0, 0, 1] });
-    var mWhite = createPhongMaterial({
+    createPhongMaterial({
         ka: [1, 1, 1],
         kd: [0.5, 0.5, 0.5],
         ks: [0, 0, 0],
     });
 
-    createModel(
-        "torus",
-        fs,
-        [1, 1, 1, 1],
-        [0, 0.75, 0],
-        [0, 0, 0, 0],
-        [1, 1, 1, 1],
-        mRed
-    );
-    createModel(
-        "sphere",
-        fs,
-        [1, 1, 1, 1],
-        [-1.25, 0.5, 0],
-        [0, 0, 0, 0],
-        [0.5, 0.5, 0.5],
-        mGreen
-    );
-    createModel(
-        "sphere",
-        fs,
-        [1, 1, 1, 1],
-        [1.25, 0.5, 0],
-        [0, 0, 0, 0],
-        [0.5, 0.5, 0.5],
-        mBlue
-    );
-    createModel(
-        "plane",
-        fs,
-        [1, 1, 1, 1],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [1, 1, 1, 1],
-        mWhite
-    );
+//    createModel(
+//        "torus",
+//        fs,
+//        [1, 1, 1, 1],
+//        [0, 0.75, 0],
+//        [0, 0, 0, 0],
+//        [1, 1, 1, 1],
+//        mRed
+//    );
+//    createModel(
+//        "sphere",
+//        fs,
+//        [1, 1, 1, 1],
+//        [-1.25, 0.5, 0],
+//        [0, 0, 0, 0],
+//        [0.5, 0.5, 0.5],
+//        mGreen
+//    );
+//    createModel(
+//        "sphere",
+//        fs,
+//        [1, 1, 1, 1],
+//        [1.25, 0.5, 0],
+//        [0, 0, 0, 0],
+//        [0.5, 0.5, 0.5],
+//        mBlue
+//    );
+//    createModel(
+//        "plane",
+//        fs,
+//        [1, 1, 1, 1],
+//        [0, 0, 0, 0],
+//        [0, 0, 0, 0],
+//        [1, 1, 1, 1],
+//        mWhite
+//    );
     createModel(
         "plane",
         fs,
