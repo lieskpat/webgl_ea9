@@ -1,10 +1,13 @@
 export default `
     attribute vec3 aPosition;
     attribute vec3 aNormal;
+    attribute vec2 aTextureCoord;
 
     uniform mat4 uPMatrix;
     uniform mat4 uMVMatrix;
     uniform mat3 uNMatrix;
+
+    varying vec2 vTextureCoord;
             
     //uniform vec4 uColor;
     varying vec4 vColor;
@@ -74,7 +77,10 @@ export default `
         // Calculate view vector.
         vec3 v = normalize(-tPosition.xyz);    
                                 
-        vColor = vec4( phong(tPosition.xyz, tNormal, v), 1.0);
+    vColor = vec4( phong(tPosition.xyz, tNormal, v), 1.0);
+
+    vTextureCoord = aTextureCoord;
+
     }
 
 `;

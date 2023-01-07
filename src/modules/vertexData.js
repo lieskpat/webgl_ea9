@@ -118,10 +118,6 @@ function createVertexDataPlane() {
             vertices[iVertex * 3 + 1] = y;
             vertices[iVertex * 3 + 2] = z;
 
-            // Set texture coordinate.
-            textureCoord[iVertex * 2] = (u + 10) / 20;
-            textureCoord[iVertex * 2 + 1] = (v + 10) / 20;
-
             // Calc and set normals.
             //var nx = Math.cos(u) * Math.cos(v);
             //var ny = Math.cos(u) * Math.sin(v);
@@ -129,6 +125,10 @@ function createVertexDataPlane() {
             normals[iVertex * 3] = 0;
             normals[iVertex * 3 + 1] = 1;
             normals[iVertex * 3 + 2] = 0;
+
+            // Set texture coordinate.
+            textureCoord[iVertex * 2] = (u + 10) / 20;
+            textureCoord[iVertex * 2 + 1] = (v + 10) / 20;
 
             // Set index.
             // Line on beam.
