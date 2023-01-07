@@ -133,7 +133,7 @@ if (!Math.hypot) Math.hypot = function () {
  * @returns {mat3} a new 3x3 matrix
  */
 
-function create$3() {
+function create$2() {
   var out = new ARRAY_TYPE(9);
 
   if (ARRAY_TYPE != Float32Array) {
@@ -219,7 +219,7 @@ function normalFromMat4(out, a) {
  * @returns {mat4} a new 4x4 matrix
  */
 
-function create$2() {
+function create$1() {
   var out = new ARRAY_TYPE(16);
 
   if (ARRAY_TYPE != Float32Array) {
@@ -761,98 +761,6 @@ function lookAt(out, eye, center, up) {
 }
 
 /**
- * 3 Dimensional Vector
- * @module vec3
- */
-
-/**
- * Creates a new, empty vec3
- *
- * @returns {vec3} a new 3D vector
- */
-
-function create$1() {
-  var out = new ARRAY_TYPE(3);
-
-  if (ARRAY_TYPE != Float32Array) {
-    out[0] = 0;
-    out[1] = 0;
-    out[2] = 0;
-  }
-
-  return out;
-}
-/**
- * Normalize a vec3
- *
- * @param {vec3} out the receiving vector
- * @param {ReadonlyVec3} a vector to normalize
- * @returns {vec3} out
- */
-
-function normalize(out, a) {
-  var x = a[0];
-  var y = a[1];
-  var z = a[2];
-  var len = x * x + y * y + z * z;
-
-  if (len > 0) {
-    //TODO: evaluate use of glm_invsqrt here?
-    len = 1 / Math.sqrt(len);
-  }
-
-  out[0] = a[0] * len;
-  out[1] = a[1] * len;
-  out[2] = a[2] * len;
-  return out;
-}
-/**
- * Perform some operation over an array of vec3s.
- *
- * @param {Array} a the array of vectors to iterate over
- * @param {Number} stride Number of elements between the start of each vec3. If 0 assumes tightly packed
- * @param {Number} offset Number of elements to skip at the beginning of the array
- * @param {Number} count Number of vec3s to iterate over. If 0 iterates over entire array
- * @param {Function} fn Function to call for each vector in the array
- * @param {Object} [arg] additional argument to pass to fn
- * @returns {Array} a
- * @function
- */
-
-(function () {
-  var vec = create$1();
-  return function (a, stride, offset, count, fn, arg) {
-    var i, l;
-
-    if (!stride) {
-      stride = 3;
-    }
-
-    if (!offset) {
-      offset = 0;
-    }
-
-    if (count) {
-      l = Math.min(count * stride + offset, a.length);
-    } else {
-      l = a.length;
-    }
-
-    for (i = offset; i < l; i += stride) {
-      vec[0] = a[i];
-      vec[1] = a[i + 1];
-      vec[2] = a[i + 2];
-      fn(vec, vec, arg);
-      a[i] = vec[0];
-      a[i + 1] = vec[1];
-      a[i + 2] = vec[2];
-    }
-
-    return a;
-  };
-})();
-
-/**
  * 4 Dimensional Vector
  * @module vec4
  */
@@ -955,6 +863,9 @@ function createVertexDataTorus() {
     // Normals.
     this.normals = new Float32Array(3 * (n + 1) * (m + 1));
     var normals = this.normals;
+    //Texture
+    this.textureCoord = new Float32Array(2 * (n + 1) * (m + 1));
+    var textureCoord = this.textureCoord;
     // Index data.
     this.indicesLines = new Uint16Array(2 * 2 * n * m);
     var indicesLines = this.indicesLines;
@@ -991,6 +902,9 @@ function createVertexDataTorus() {
             normals[iVertex * 3] = nx;
             normals[iVertex * 3 + 1] = ny;
             normals[iVertex * 3 + 2] = nz;
+
+            textureCoord[iVertex * 2] = u / (2 * Math.PI); // s
+            textureCoord[iVertex * 2 + 1] = v / Math.PI; // t
 
             // Set index.
             // Line on beam.
@@ -1068,8 +982,12 @@ function createVertexDataPlane() {
             normals[iVertex * 3 + 2] = 0;
 
             // Set texture coordinate.
-            textureCoord[iVertex * 2] = (u + 10) / 20;
-            textureCoord[iVertex * 2 + 1] = (v + 10) / 20;
+            //            textureCoord[iVertex * 2] = (u + 10) / 20;
+            //            textureCoord[iVertex * 2 + 1] = (v + 10) / 20;
+            //
+            // Set texture coordinate.
+            textureCoord[iVertex * 2] = u;
+            textureCoord[iVertex * 2 + 1] = v;
 
             // Set index.
             // Line on beam.
@@ -1098,128 +1016,6 @@ function createVertexDataPlane() {
     }
 }
 
-function createVertexDataPillow() {
-    const m = 7;
-    const n = 32;
-    // Positions.
-    this.vertices = new Float32Array(3 * (n + 1) * (m + 1));
-    var vertices = this.vertices;
-    // Normals.
-    this.normals = new Float32Array(3 * (n + 1) * (m + 1));
-    var normals = this.normals;
-    // Index data.
-    this.indicesLines = new Uint16Array(2 * 2 * n * m);
-    var indicesLines = this.indicesLines;
-    this.indicesTris = new Uint16Array(3 * 2 * n * m);
-    var indicesTris = this.indicesTris;
-
-    const umin = 0;
-    const umax = Math.PI;
-    const vmin = -1 * Math.PI;
-    const vmax = Math.PI;
-    const a = 0.5;
-    const du = (umin + umax) / n;
-    const dv = (vmin - vmax) / m;
-    let iIndex = 0;
-    let iTriangles = 0;
-
-    for (let i = 0, u = 0; i <= n; i++, u += du) {
-        for (let j = 0, v = 0; j <= m; j++, v += dv) {
-            let iVertex = i * (m + 1) + j;
-            let x = Math.cos(u);
-            let z = Math.cos(v);
-            let y = a * Math.sin(u) * Math.sin(v);
-            vertices[iVertex * 3] = x;
-            vertices[iVertex * 3 + 1] = y;
-            vertices[iVertex * 3 + 2] = z;
-
-            // Calc and set normals.
-            var nx = Math.cos(u) * Math.cos(v);
-            var ny = Math.cos(u) * Math.sin(v);
-            var nz = Math.sin(u);
-            normals[iVertex * 3] = nx;
-            normals[iVertex * 3 + 1] = ny;
-            normals[iVertex * 3 + 2] = nz;
-
-            if (j > 0 && i > 0) {
-                indicesLines[iIndex++] = iVertex - 1;
-                indicesLines[iIndex++] = iVertex;
-            }
-            if (j > 0 && i > 0) {
-                indicesLines[iIndex++] = iVertex - (m + 1);
-                indicesLines[iIndex++] = iVertex;
-            }
-            if (j > 0 && i > 0) {
-                indicesTris[iTriangles++] = iVertex;
-                indicesTris[iTriangles++] = iVertex - 1;
-                indicesTris[iTriangles++] = iVertex - (m + 1);
-
-                indicesTris[iTriangles++] = iVertex - 1;
-                indicesTris[iTriangles++] = iVertex - (m + 1) - 1;
-                indicesTris[iTriangles++] = iVertex - (m + 1);
-            }
-        }
-    }
-}
-
-function createVertexDataRecSphere() {
-    const vertexArray = [
-        0, 1, 0, 0, 0, 1, 1, 0, 0, -1, 0, 0, 0, 0, -1, 0, -1, 0,
-    ];
-    //let vertexArray = [];
-    let lineArray = [];
-
-    // top
-    const vectorA = [0, 1.0, 0];
-    // middle
-    const vectorB = [0, 0, 1.0];
-    //middle right
-    const vectorC = [1.0, 0, 0];
-    //middle left
-    const vectorD = [-1.0, 0, 0];
-    //back
-    const vectorE = [0, 0, -1.0];
-    //bottom
-    const vectorF = [0, -1.0, 0];
-
-    normalize(vectorA, vectorA);
-    normalize(vectorB, vectorB);
-    normalize(vectorC, vectorC);
-    normalize(vectorD, vectorD);
-    normalize(vectorE, vectorE);
-    normalize(vectorF, vectorF);
-
-    //tessellateTriangle(vertexArray, vectorA, vectorB, vectorC, recursionDepth);
-    //tessellateTriangle(vertexArray, vectorA, vectorB, vectorD, recursionDepth);
-    //tessellateTriangle(vertexArray, vectorA, vectorC, vectorD, recursionDepth);
-    //tessellateTriangle(vertexArray, vectorB, vectorC, vectorD, recursionDepth);
-    let triangles = [
-        [2, 0, 1],
-        [5, 2, 1],
-        [3, 0, 2],
-        [5, 3, 2],
-        [4, 0, 3],
-        [5, 4, 3],
-        [1, 0, 4],
-        [5, 1, 4],
-    ];
-
-    lineArray = [
-        0, 1, 0, 2, 0, 3, 0, 4,
-
-        1, 2, 1, 3, 2, 4, 3, 4,
-
-        1, 5, 2, 5, 3, 5, 4, 5,
-    ];
-    // Positions.
-    this.vertices = new Float32Array(vertexArray);
-    // Normals.
-    //this.normals = new Float32Array(3 * (n + 1) * (m + 1));
-    // Index data.
-    this.indicesLines = new Uint16Array(lineArray);
-    this.indicesTris = new Uint16Array(triangles);
-}
-
 //============================Begin Sphere=====================================================================================================
 
 function createVertexDataSphere() {
@@ -1232,6 +1028,9 @@ function createVertexDataSphere() {
     // Normals.
     this.normals = new Float32Array(3 * (n + 1) * (m + 1));
     var normals = this.normals;
+    // Textures
+    this.textureCoord = new Float32Array(2 * (n + 1) * (m + 1));
+    var textureCoord = this.textureCoord;
     // Index data.
     this.indicesLines = new Uint16Array(2 * 2 * n * m);
     var indicesLines = this.indicesLines;
@@ -1265,6 +1064,9 @@ function createVertexDataSphere() {
             normals[iVertex * 3] = x / vertexLength;
             normals[iVertex * 3 + 1] = y / vertexLength;
             normals[iVertex * 3 + 2] = z / vertexLength;
+
+            textureCoord[iVertex * 2] = u / (2 * Math.PI); // s
+            textureCoord[iVertex * 2 + 1] = v / Math.PI; // t
 
             // Set index.
             // Line on beam.
@@ -1303,14 +1105,14 @@ geometryModelDatas.push({
     description: "plane",
     function: createVertexDataPlane,
 });
-geometryModelDatas.push({
-    description: "pillow",
-    function: createVertexDataPillow,
-});
-geometryModelDatas.push({
-    description: "sphere-rekursiv",
-    function: createVertexDataRecSphere,
-});
+//geometryModelDatas.push({
+//    description: "pillow",
+//    function: createVertexDataPillow,
+//});
+//geometryModelDatas.push({
+//    description: "sphere-rekursiv",
+//    function: createVertexDataRecSphere,
+//});
 geometryModelDatas.push({
     description: "sphere",
     function: createVertexDataSphere,
@@ -1346,10 +1148,10 @@ const camera = {
     lrtb: 2.0,
     // View matrix.
     // creates identy matrix
-    vMatrix: create$2(),
+    vMatrix: create$1(),
     // Projection matrix.
     // creates identy matrix
-    pMatrix: create$2(),
+    pMatrix: create$1(),
     // Projection types: ortho, perspective, frustum.
     //projectionType: "ortho",
     projectionType: "perspective",
@@ -1528,59 +1330,23 @@ function initModels() {
 
     // Create some default material.
     createPhongMaterial();
-    createPhongMaterial({ kd: [1, 0, 0] });
+    var mRed = createPhongMaterial({ kd: [1, 0, 0] });
     createPhongMaterial({ kd: [0, 1, 0] });
-    var mBlue = createPhongMaterial({ kd: [0, 0, 1] });
+    createPhongMaterial({ kd: [0, 0, 1] });
     createPhongMaterial({
         ka: [1, 1, 1],
         kd: [0.5, 0.5, 0.5],
         ks: [0, 0, 0],
     });
 
-//    createModel(
-//        "torus",
-//        fs,
-//        [1, 1, 1, 1],
-//        [0, 0.75, 0],
-//        [0, 0, 0, 0],
-//        [1, 1, 1, 1],
-//        mRed
-//    );
-//    createModel(
-//        "sphere",
-//        fs,
-//        [1, 1, 1, 1],
-//        [-1.25, 0.5, 0],
-//        [0, 0, 0, 0],
-//        [0.5, 0.5, 0.5],
-//        mGreen
-//    );
-//    createModel(
-//        "sphere",
-//        fs,
-//        [1, 1, 1, 1],
-//        [1.25, 0.5, 0],
-//        [0, 0, 0, 0],
-//        [0.5, 0.5, 0.5],
-//        mBlue
-//    );
-//    createModel(
-//        "plane",
-//        fs,
-//        [1, 1, 1, 1],
-//        [0, 0, 0, 0],
-//        [0, 0, 0, 0],
-//        [1, 1, 1, 1],
-//        mWhite
-//    );
     createModel(
-        "plane",
+        "torus",
         fs,
         [1, 1, 1, 1],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [1, 1, 1, 1],
-        mBlue,
+        [0, 0, 0],
+        [0, 0, 0],
+        [2, 2, 2],
+        mRed,
         "textures/x.png"
     );
 }
@@ -1642,9 +1408,13 @@ function onloadTextureImage(texture) {
 
     // Set texture parameter.
     // Min Filter: NEAREST,LINEAR, .. , LINEAR_MIPMAP_LINEAR,
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(
+        gl.TEXTURE_2D,
+        gl.TEXTURE_MIN_FILTER,
+        gl.LINEAR_MIPMAP_LINEAR
+    );
     // Mag Filter: NEAREST,LINEAR
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     // Use mip-Mapping.
     gl.generateMipmap(gl.TEXTURE_2D);
 
@@ -1660,11 +1430,11 @@ function initTransformations(model, translate, rotate, scale) {
     model.rotate = rotate;
     model.scale = scale;
     // mMatrix - ist Model Matrix
-    model.mMatrix = create$2();
+    model.mMatrix = create$1();
     //mvMatrix - ist ModelView Matrix
-    model.mvMatrix = create$2();
+    model.mvMatrix = create$1();
 
-    model.nMatrix = create$3();
+    model.nMatrix = create$2();
 }
 
 function updateTransformations(model) {
@@ -1735,6 +1505,14 @@ function initDataAndBuffers(model, geometryname) {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, model.indicesTris, gl.STATIC_DRAW);
     model.iboTris.numberOfElements = model.indicesTris.length;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+    // Setup texture coordinate vertex buffer object.
+    model.vboTextureCoord = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, model.vboTextureCoord);
+    gl.bufferData(gl.ARRAY_BUFFER, model.textureCoord, gl.STATIC_DRAW);
+    // Bind buffer to attribute variable.
+    prog.textureCoordAttrib = gl.getAttribLocation(prog, "aTextureCoord");
+    gl.enableVertexAttribArray(prog.textureCoordAttrib);
 }
 
 //animate spotlights around a circle
@@ -1865,7 +1643,10 @@ function render() {
         gl.uniform3fv(prog.materialKdUniform, models[i].material.kd);
         gl.uniform3fv(prog.materialKsUniform, models[i].material.ks);
         gl.uniform1f(prog.materialKeUniform, models[i].material.ke);
-
+        // Texture.
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, models[i].texture);
+        gl.uniform1i(prog.textureUniform, 0);
         draw(models[i]);
     }
 }
@@ -1911,10 +1692,15 @@ function draw(model) {
     gl.bindBuffer(gl.ARRAY_BUFFER, model.vboNormal);
     gl.vertexAttribPointer(prog.normalAttrib, 3, gl.FLOAT, false, 0, 0);
 
+    // Setup texture VBO.
+    gl.bindBuffer(gl.ARRAY_BUFFER, model.vboTextureCoord);
+    gl.vertexAttribPointer(prog.textureCoordAttrib, 2, gl.FLOAT, false, 0, 0);
+
     // Setup rendering tris.
     const fill = model.fillstyle.search(/fill/) != -1;
     if (fill) {
         gl.enableVertexAttribArray(prog.normalAttrib);
+        gl.enableVertexAttribArray(prog.textureCoordAttrib);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.iboTris);
         gl.drawElements(
             gl.TRIANGLES,
@@ -1928,6 +1714,7 @@ function draw(model) {
     const wireframe = model.fillstyle.search(/wireframe/) != -1;
     if (wireframe) {
         gl.disableVertexAttribArray(prog.normalAttrib);
+        gl.disableVertexAttribArray(prog.textureCoordAttrib);
         gl.vertexAttrib3f(prog.normalAttrib, 0, 0, 0);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.iboLines);
         gl.drawElements(
