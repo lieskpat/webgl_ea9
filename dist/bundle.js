@@ -1347,7 +1347,7 @@ function initModels() {
         [0, 0, 0],
         [2, 2, 2],
         mRed,
-        "textures/x.png"
+        "textures/schachbrett.png"
     );
 }
 
@@ -1408,11 +1408,7 @@ function onloadTextureImage(texture) {
 
     // Set texture parameter.
     // Min Filter: NEAREST,LINEAR, .. , LINEAR_MIPMAP_LINEAR,
-    gl.texParameteri(
-        gl.TEXTURE_2D,
-        gl.TEXTURE_MIN_FILTER,
-        gl.LINEAR_MIPMAP_LINEAR
-    );
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     // Mag Filter: NEAREST,LINEAR
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     // Use mip-Mapping.
