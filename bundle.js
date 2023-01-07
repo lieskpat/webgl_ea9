@@ -1481,6 +1481,9 @@ function initUniforms() {
     prog.materialKdUniform = gl.getUniformLocation(prog, "material.kd");
     prog.materialKsUniform = gl.getUniformLocation(prog, "material.ks");
     prog.materialKeUniform = gl.getUniformLocation(prog, "material.ke");
+
+    // Texture.
+    prog.textureUniform = gl.getUniformLocation(prog, "uTexture");
 }
 
 /**
@@ -1551,6 +1554,16 @@ function initModels() {
         [1, 1, 1, 1],
         mWhite
     );
+    createModel(
+        "plane",
+        fs,
+        [1, 1, 1, 1],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [1, 1, 1, 1],
+        mBlue,
+        "textures/x.png"
+    );
 }
 
 /**
@@ -1566,15 +1579,61 @@ function createModel(
     translate,
     rotate,
     scale,
-    material
+    material,
+    textureFilename
 ) {
     const model = {};
     model.fillstyle = fillstyle;
     model.color = color;
     model.material = material;
+    if (textureFilename) {
+        initTexture(model, textureFilename);
+    }
     initDataAndBuffers(model, geometryname);
     initTransformations(model, translate, rotate, scale);
     models.push(model);
+}
+
+function initTexture(model, filename) {
+    var texture = gl.createTexture();
+    model.texture = texture;
+    texture.loaded = false;
+    texture.image = new Image();
+    texture.image.onload = function () {
+        onloadTextureImage(texture);
+    };
+    texture.image.src = filename;
+}
+
+function onloadTextureImage(texture) {
+    texture.loaded = true;
+
+    // Use texture object.
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    // Assigen image data.
+    gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        texture.image
+    );
+
+    // Set texture parameter.
+    // Min Filter: NEAREST,LINEAR, .. , LINEAR_MIPMAP_LINEAR,
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    // Mag Filter: NEAREST,LINEAR
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    // Use mip-Mapping.
+    gl.generateMipmap(gl.TEXTURE_2D);
+
+    // Release texture object.
+    gl.bindTexture(gl.TEXTURE_2D, null);
+
+    // Update the scene.
+    render();
 }
 
 function initTransformations(model, translate, rotate, scale) {
